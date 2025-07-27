@@ -45,5 +45,6 @@ typedef byte1_t				byte_t;
 // Other types
 
 typedef unsigned long int	register_t;
+typedef unsigned long int	uintptr_t;
 
 #endif // TYPES_H

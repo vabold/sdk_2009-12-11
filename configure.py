@@ -647,7 +647,7 @@ config.libs = [
     RvlLib(
         "mem",
         [
-            Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_heapCommon.c"),
+            Object(DebugMatching, ReleaseMatching, "mem/mem_heapCommon.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_expHeap.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_frameHeap.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_unitHeap.c"),
