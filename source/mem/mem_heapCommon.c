@@ -38,63 +38,64 @@ static MEMiHeapHead *FindContainHeap_(MEMList *list, void const *block)
 	return NULL;
 }
 
-static MEMiHeapHead *FindParentHeap_(MEMiHeapHead *search, MEMiHeapHead *heap)
+static MEMiHeapHead *FindParentHeap_(MEMiHeapHead *search,
+                                     MEMiHeapHead *pHeapHd)
 {
 	MEMList *list = &search->childList;
 	MEMiHeapHead *curr = NULL;
 
 	while (NULL != (curr = (MEMiHeapHead *)MEMGetNextListObject(list, curr)))
 	{
-		if (curr == heap)
+		if (curr == pHeapHd)
 			return search;
 
-		if (GetUIntPtr(curr->heapStart) > GetUIntPtr(heap)
-		    || GetUIntPtr(heap) >= GetUIntPtr(curr->heapEnd))
+		if (GetUIntPtr(curr->heapStart) > GetUIntPtr(pHeapHd)
+		    || GetUIntPtr(pHeapHd) >= GetUIntPtr(curr->heapEnd))
 		{
 			continue;
 		}
 
-		return FindParentHeap_(curr, heap);
+		return FindParentHeap_(curr, pHeapHd);
 	}
 
 	return NULL;
 }
 
-static MEMList *FindListContainHeap_(MEMiHeapHead *heap)
+static MEMList *FindListContainHeap_(MEMiHeapHead *pHeapHd)
 {
 	MEMList *list = &sRootList;
-	MEMiHeapHead *containHeap = FindContainHeap_(&sRootList, heap);
+	MEMiHeapHead *containHeap = FindContainHeap_(&sRootList, pHeapHd);
 	if (containHeap)
 		list = &containHeap->childList;
 
 	return list;
 }
 
-static BOOL ListContainsHeap_(MEMList *list, MEMiHeapHead *heap)
+static BOOL ListContainsHeap_(MEMList *list, MEMiHeapHead *pHeapHd)
 {
 	MEMiHeapHead *search = NULL;
 
 	while (NULL
 	       != (search = (MEMiHeapHead *)MEMGetNextListObject(list, search)))
 	{
-		if (search == heap)
+		if (search == pHeapHd)
 			return TRUE;
 	}
 
 	return FALSE;
 }
 
-void MEMiInitHeapHead(MEMiHeapHead *heap, u32 signature, void *heapStart,
+void MEMiInitHeapHead(MEMiHeapHead *pHeapHd, u32 signature, void *heapStart,
                       void *heapEnd, u16 opt)
 {
-	heap->signature = signature;
-	heap->heapStart = heapStart;
-	heap->heapEnd = heapEnd;
-	heap->attribute.val = 0;
-	SetOptForHeap(heap, opt);
-	FillNoUseMemory(heap, heapStart, GetOffsetFromPtr(heapStart, heapEnd));
+	pHeapHd->signature = signature;
+	pHeapHd->heapStart = heapStart;
+	pHeapHd->heapEnd = heapEnd;
+	pHeapHd->attribute.val = 0;
+	SetOptForHeap(pHeapHd, opt);
+	FillNoUseMemory(pHeapHd, heapStart, GetOffsetFromPtr(heapStart, heapEnd));
 
-	MEMInitList(&heap->childList, offsetof(MEMiHeapHead, link));
+	MEMInitList(&pHeapHd->childList, offsetof(MEMiHeapHead, link));
 	if (!sRootListInitialized)
 	{
 		MEMInitList(&sRootList, offsetof(MEMiHeapHead, link));
@@ -102,9 +103,9 @@ void MEMiInitHeapHead(MEMiHeapHead *heap, u32 signature, void *heapStart,
 		sRootListInitialized = TRUE;
 	}
 
-	OSInitMutex(&heap->mutex);
+	OSInitMutex(&pHeapHd->mutex);
 	OSLockMutex(&sRootMutex);
-	MEMAppendListObject(FindListContainHeap_(heap), heap);
+	MEMAppendListObject(FindListContainHeap_(pHeapHd), pHeapHd);
 	OSUnlockMutex(&sRootMutex);
 }
 
@@ -121,10 +122,10 @@ void MEMiFinalizeHeap(MEMiHeapHead *pHeapHd)
 	pHeapHd->signature = 0;
 }
 
-void MEMiDumpHeapHead(MEMiHeapHead *heap)
+void MEMiDumpHeapHead(MEMiHeapHead *pHeapHd)
 {
 	OSReport("[OS Foundation ");
-	switch (heap->signature)
+	switch (pHeapHd->signature)
 	{
 	case 'EXPH':
 		OSReport("Exp");
@@ -140,15 +141,15 @@ void MEMiDumpHeapHead(MEMiHeapHead *heap)
 	}
 
 	OSReport(" Heap]\n");
-	OSReport("    whole [%p - %p)\n", heap, heap->heapEnd);
+	OSReport("    whole [%p - %p)\n", pHeapHd, pHeapHd->heapEnd);
 }
 
-MEMiHeapHead *MEMFindContainHeap(void const *block)
+MEMHeapHandle *MEMFindContainHeap(void const *block)
 {
 	return FindContainHeap_(&sRootList, block);
 }
 
-MEMiHeapHead *MEMFindParentHeap(MEMiHeapHead *heap)
+MEMHeapHandle *MEMFindParentHeap(MEMHeapHandle *heap)
 {
 	MEMiHeapHead *curr = NULL;
 
@@ -171,14 +172,14 @@ MEMiHeapHead *MEMFindParentHeap(MEMiHeapHead *heap)
 }
 
 #ifndef NDEBUG
-void MEMiDumpExpHeap(MEMiHeapHead *);
-void MEMiDumpFrmHeap(MEMiHeapHead *);
-void MEMiDumpUnitHeap(MEMiHeapHead *);
+void MEMiDumpExpHeap(MEMHeapHandle *);
+void MEMiDumpFrmHeap(MEMHeapHandle *);
+void MEMiDumpUnitHeap(MEMHeapHandle *);
 
-void MEMDumpHeap(MEMiHeapHead *heap)
+void MEMDumpHeap(MEMHeapHandle *heap)
 {
-	MEMiHeapHead *heap_ = heap;
-	switch (heap_->signature)
+	MEMiHeapHead *pHeapHd = heap;
+	switch (pHeapHd->signature)
 	{
 	case 'EXPH':
 		LockHeap(heap);

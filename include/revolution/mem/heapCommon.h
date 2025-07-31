@@ -13,7 +13,9 @@ extern "C"
 typedef enum
 {
 	MEM_HEAP_FILL_NO_USE,
-	MEM_HEAP_FILL_MAX = 3,
+	MEM_HEAP_FILL_ALLOC,
+	MEM_HEAP_FILL_FREE,
+	MEM_HEAP_FILL_MAX,
 } MEMHeapFill;
 
 typedef struct MEMiHeapHead
@@ -35,15 +37,22 @@ typedef struct MEMiHeapHead
 	} attribute;
 } MEMiHeapHead;
 
-void MEMiInitHeapHead(MEMiHeapHead *heap, u32 signature, void *heapStart,
+typedef MEMiHeapHead MEMHeapHandle;
+
+void MEMiInitHeapHead(MEMiHeapHead *pHeapHd, u32 signature, void *heapStart,
                       void *heapEnd, u16 opt);
 void MEMiFinalizeHeap(MEMiHeapHead *pHeapHd);
-void MEMiDumpHeapHead(MEMiHeapHead *heap);
-MEMiHeapHead *MEMFindContainHeap(void const *block);
-MEMiHeapHead *MEMFindParentHeap(MEMiHeapHead *heap);
+void MEMiDumpHeapHead(MEMHeapHandle *pHeapHd);
+MEMHeapHandle *MEMFindContainHeap(void const *block);
+MEMHeapHandle *MEMFindParentHeap(MEMHeapHandle *heap);
+
+static inline void *MEMGetHeapEndAddress(MEMHeapHandle *heap)
+{
+	return heap->heapEnd;
+}
 
 #ifndef NDEBUG
-void MEMDumpHeap(MEMiHeapHead *heap);
+void MEMDumpHeap(MEMHeapHandle *heap);
 u32 MEMSetFillValForHeap(MEMHeapFill type, u32 fillVal);
 u32 MEMGetFillValForHeap(MEMHeapFill type);
 #endif
