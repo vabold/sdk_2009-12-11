@@ -42,6 +42,12 @@ static inline s32 ComparePtr(void *p0, void *p1)
 	return lhs - rhs;
 }
 
+#define RoundUpPtr(ptr, align) \
+	((void *)(((GetUIntPtr(ptr)) + (align) - 1) & (~((align) - 1))))
+
+#define RoundDownPtr(ptr, align) \
+	((void *)((GetUIntPtr(ptr)) & (~((align) - 1))))
+
 static inline u16 GetOptForHeap(MEMiHeapHead *pHeapHd)
 {
 	return pHeapHd->attribute.fields.optFlag;

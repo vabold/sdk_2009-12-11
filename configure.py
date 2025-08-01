@@ -649,7 +649,7 @@ config.libs = [
         [
             Object(DebugMatching, ReleaseMatching, "mem/mem_heapCommon.c"),
             Object(DebugMatching, ReleaseMatching, "mem/mem_expHeap.c"),
-            Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_frameHeap.c"),
+            Object(DebugMatching, ReleaseMatching, "mem/mem_frameHeap.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_unitHeap.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_allocator.c"),
             Object(DebugNonMatching, ReleaseNonMatching, "mem/mem_list.c"),
